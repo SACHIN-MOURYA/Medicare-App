@@ -22,6 +22,22 @@ const doctorSchema=new mongoose.Schema({
         require: true
     },
     hospital_affiliations: [String],
+    clinic_name:{
+        type: String,
+        require: true
+    },
+    address:{
+        type: String,
+        require: true
+    },
+    city:{
+        type: String,
+        require: true
+    },
+    pin:{
+        type: String,
+        require: true
+    },
     password:{
         type: String,
         require: true

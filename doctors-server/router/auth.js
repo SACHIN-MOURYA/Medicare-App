@@ -6,28 +6,12 @@ const bcrypt=require('bcryptjs');
 require('../database/db');
 const User=require("../model/userschema");
 const Doctor=require("../model/doctorschema");
+const Appointment=require("../model/bookingschema");
 const Authenticate = require('../middleware/authentication');
 
 router.get('/',(req,res)=>{
     res.send("Hello Wolrd in router/auth/home");
 });
-
-// router.post('/register',(req,res)=>{
-//     const {name ,email, phone, work, password, cpassword}=req.body;
-//     if(!name || !email || !phone || !work || !password || !cpassword){
-//         return res.json({error:"plz filled the filed properly"});
-//     }
-//     User.findOne({email:email})
-//         .then((userExit)=>{
-//             if(userExit){
-//                 return res.status(422).json({error:"Email already exists"});
-//             }
-//             const user = new User({name,email,phone,work,password,cpassword});
-//             user.save().then(()=>{
-//                 res.status(201).json({message:"registered successfully"});
-//             }).catch((err)=>res.status(500).json({error:"Failed to registered"}));
-//         }).catch(err=>{console.log(err);});
-// });
 
 router.post('/signup',async(req,res)=>{
     const {name ,email, phone, password, cpassword}=req.body;
@@ -93,8 +77,8 @@ router.post('/login',async (req,res)=>{
     }
 });
 router.post('/doctorsignup',async(req,res)=>{
-    const {name ,email, phone, specalist, password, cpassword}=req.body;
-    if(!name || !email || !phone || !specalist || !password || !cpassword){
+    const {name ,email, phone, specalist,hospital_affiliations,clinic_name,address,city,pin, password, cpassword}=req.body;
+    if(!name || !email || !phone || !specalist || !clinic_name || !address || !city || !pin || !password || !cpassword){
         console.log(name);
         console.log(email);
         console.log(phone);
@@ -112,7 +96,7 @@ router.post('/doctorsignup',async(req,res)=>{
             return res.status(422).json({error:"password not mached"});
         }
         else{
-            const doctor = new Doctor({name,email,phone,specalist,password,cpassword});
+            const doctor = new Doctor({name,email,phone,specalist,hospital_affiliations,clinic_name,address,city,pin,password,cpassword});
             await doctor.save();
             res.status(201).json({message:"registered successfully"});
         }
@@ -153,6 +137,38 @@ router.post('/doctorlogin',async (req,res)=>{
         }
     }catch(err){
         console.log(err);
+    }
+});
+
+router.post('/booking', async (req, res) => {
+    const { user, doctor, appointmentDate, durationInMinutes, status } = req.body;
+    if (!user || !doctor || !appointmentDate || !durationInMinutes || !status) {
+        console.log(user);
+        console.log(doctor);
+        console.log(appointmentDate);
+        console.log(durationInMinutes);
+        console.log(status);
+        return res.json({ error: "Please fill all the fields properly" });
+    }
+    try {
+        const existingAppointmentUser = await Appointment.findOne({ user: user });
+        const existingAppointmentDoctor = await Appointment.findOne({ doctor: doctor });
+        if (existingAppointmentUser || existingAppointmentDoctor) {
+            return res.status(422).json({ error: "User's appointment or doctor's appointment already exists" });
+        } else {
+            const appointment = new Appointment({
+                user: user,
+                doctor: doctor,
+                appointmentDate: new Date(appointmentDate),
+                durationInMinutes: durationInMinutes,
+                status: status
+            });
+            await appointment.save();
+            res.status(201).json({ message: "Appointment registered successfully" });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Internal server error" });
     }
 });
 
