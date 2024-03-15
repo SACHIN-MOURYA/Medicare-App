@@ -171,11 +171,21 @@ router.post('/booking', async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 });
-
-router.get('/fetchdoctors', async (req, res) => {
+router.get('/fetchcitydoctors', async (req, res) => {
     const {city}=req.body;
     try {
         const doctors = await Doctor.find({city:city}).select('-tokens -password -cpassword');
+        // const doctorIds = doctors.map(doctor => doctor._id);
+        res.json(doctors);
+    } catch (error) {
+        console.error('Error fetching doctors:', error);
+        res.status(500).json({ error: 'Failed to fetch doctors' });
+    }
+});
+
+router.get('/fetchdoctors', async (req, res) => {
+    try {
+        const doctors = await Doctor.find().select('-tokens -password -cpassword');
         // const doctorIds = doctors.map(doctor => doctor._id);
         res.json(doctors);
     } catch (error) {
