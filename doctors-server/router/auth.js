@@ -172,6 +172,18 @@ router.post('/booking', async (req, res) => {
     }
 });
 
+router.get('/fetchdoctors', async (req, res) => {
+    const {city}=req.body;
+    try {
+        const doctors = await Doctor.find({city:city}).select('-tokens -password -cpassword');
+        // const doctorIds = doctors.map(doctor => doctor._id);
+        res.json(doctors);
+    } catch (error) {
+        console.error('Error fetching doctors:', error);
+        res.status(500).json({ error: 'Failed to fetch doctors' });
+    }
+});
+
 router.get('/about',Authenticate,(req,res)=>{
     console.log("About");
     res.send(req.rootUser);
